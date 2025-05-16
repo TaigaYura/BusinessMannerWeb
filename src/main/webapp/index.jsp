@@ -8,7 +8,7 @@
 </head>
 <body>
   <h1>ビジネスマナークイズへようこそ！</h1>
-  <form action="quizSetup" method="get">
+  <form action="${pageContext.request.contextPath}/quizSetup" method="get">
     <button type="submit">ゲームスタート</button>
   </form>
 </body>

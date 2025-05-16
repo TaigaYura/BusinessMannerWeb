@@ -5,12 +5,14 @@
 <head>
   <meta charset="UTF-8" />
   <title>ラウンド結果</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet"
+      href="${pageContext.request.contextPath}/css/style.css" />
 </head>
 <body>
   <h1>ラウンド ${sessionScope.currentRound - 1} の結果</h1>
-  <p>与えたダメージ：<strong>${roundDamage}</strong></p>
-  <p>敵の残りHP：<strong>${remainingHP}</strong></p>
+  <p>平均正答率：<strong><c:out value="${roundDamage}"/></strong></p>
+  <p>与えたダメージ：<strong><c:out value="${roundDamage}"/></strong></p>
+  <p>敵の残りHP：<strong><c:out value="${remainingHP}"/></strong></p>
 
   <c:choose>
     <c:when test="${sessionScope.currentRound <= sessionScope.totalRounds && remainingHP > 0}">

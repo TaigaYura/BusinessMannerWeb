@@ -2,41 +2,39 @@ package model;
 
 import java.util.List;
 
-/**
- * クイズの１問を表すモデル
- */
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Question {
-    /** 問題文 */
-    private String question;
-    /** 選択肢リスト */
+    @JsonProperty("question")
+    private String text;
+
+    @JsonProperty("options")
     private List<String> options;
-    /** 正解のインデックス（0 から始まる） */
-    private int answerIndex;
 
-    // ↓ Jackson でマッピングされるようにフィールド名とゲッターを一致させる
+    @JsonProperty("answer")
+    private String answer;
 
-    public String getQuestion() {
-        return question;
+    // Jackson 用
+    public Question() {}
+
+    public String getText() {
+        return text;
     }
-
-    public void setQuestion(String question) {
-        this.question = question;
+    public void setText(String text) {
+        this.text = text;
     }
 
     public List<String> getOptions() {
         return options;
     }
-
     public void setOptions(List<String> options) {
         this.options = options;
     }
 
-    /** これが無いと getAnswerIndex() が未定義になります */
-    public int getAnswerIndex() {
-        return answerIndex;
+    public String getAnswer() {
+        return answer;
     }
-
-    public void setAnswerIndex(int answerIndex) {
-        this.answerIndex = answerIndex;
+    public void setAnswer(String answer) {
+        this.answer = answer;
     }
 }

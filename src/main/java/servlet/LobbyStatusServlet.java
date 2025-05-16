@@ -11,15 +11,14 @@ import service.LobbyService;
 
 @WebServlet("/lobby/status")
 public class LobbyStatusServlet extends HttpServlet {
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-        throws IOException {
-        int count = LobbyService.getPlayerCount();
-        boolean started = LobbyService.isGameStarted();
-
-        resp.setContentType("application/json;charset=UTF-8");
-        resp.getWriter().write(
-            "{\"count\":" + count + ",\"started\":" + started + "}"
-        );
-    }
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+      throws IOException {
+    int count   = LobbyService.getPlayerCount();
+    boolean s   = LobbyService.isGameStarted();
+    resp.setContentType("application/json;charset=UTF-8");
+    resp.getWriter().write(
+      String.format("{\"count\":%d,\"started\":%b}", count, s)
+    );
+  }
 }

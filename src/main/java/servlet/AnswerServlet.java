@@ -1,6 +1,7 @@
 package servlet;
 
 import java.io.IOException;
+import java.util.List;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -11,73 +12,70 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import model.Question;
-import service.GameService;
 import service.RoundService;
 
 @WebServlet("/answer")
 public class AnswerServlet extends HttpServlet {
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
 
-        HttpSession session = request.getSession();
-        // セッションから現在の問題リストとインデックスを取得
-        @SuppressWarnings("unchecked")
-        java.util.List<Question> questions = 
-            (java.util.List<Question>) session.getAttribute("currentQuestionList");
-        Integer questionIndex = (Integer) session.getAttribute("questionIndex");
-        Integer correctCount = (Integer) session.getAttribute("correctCount");
-        Integer questionsPerRound = (Integer) session.getAttribute("questionsPerRound");
-        Integer totalPlayers = (Integer) session.getAttribute("totalPlayers");
-
-        // フォームから選択された答えを取得
-        String[] selected = request.getParameterValues("choice");
-        int selectedIndex = (selected != null && selected.length > 0)
-                ? Integer.parseInt(selected[0])
-                : -1;
-
-        // 正誤判定
-        Question current = questions.get(questionIndex - 1);
-        if (current.getAnswerIndex() == selectedIndex) {
-            correctCount++;
-        }
-        // セッションに更新
-        session.setAttribute("correctCount", correctCount);
-        session.setAttribute("questionIndex", questionIndex + 1);
-
-        // RoundService にこのプレイヤーの正答数を提出
-        RoundService.submit(session.getId(), correctCount);
-
-        // 全員の提出待ちかチェック
-        if (!RoundService.allSubmitted(totalPlayers)) {
-            // 待機画面へ
-            response.sendRedirect(request.getContextPath() + "/waiting");
-            return;
-        }
-
-        // 全員提出されたらダメージ計算
-        double avgRate = RoundService.calculateAverageRate(questionsPerRound);
-
-        // GameService をセッションから取得 or 新規作成
-        GameService gameService = (GameService) session.getAttribute("gameService");
-        if (gameService == null) {
-            gameService = new GameService();
-            session.setAttribute("gameService", gameService);
-        }
-
-        // ダメージ計算・適用
-        int damage = gameService.calculateDamage(avgRate, questionsPerRound);
-        gameService.applyDamage(damage);
-        int remainingHP = gameService.getEnemyHP();
-
-        // ビューに渡す
-        request.setAttribute("damageDealt", damage);
-        request.setAttribute("remainingHP", remainingHP);
-        request.setAttribute("averageRate", avgRate);
-
-        // ラウンド結果ページへ
-        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
-        rd.forward(request, response);
+    // (1) セッションが存在しない or 切れていたら最初へ
+    HttpSession session = req.getSession(false);
+    if (session == null) {
+      resp.sendRedirect(req.getContextPath() + "/quizSetup");
+      return;
     }
+
+    // (2) 必須属性を一括で取得して null チェック
+    Integer qprObj      = (Integer) session.getAttribute("questionsPerRound");
+    Integer qiObj       = (Integer) session.getAttribute("questionIndex");
+    Integer ccObj       = (Integer) session.getAttribute("correctCount");
+    Integer hpObj       = (Integer) session.getAttribute("enemyHP");
+    @SuppressWarnings("unchecked")
+    List<Question> list = (List<Question>) session.getAttribute("currentQuestionList");
+
+    if (qprObj == null || qiObj == null || ccObj == null || hpObj == null || list == null) {
+      // 何かが欠けていたら最初の画面へ
+      resp.sendRedirect(req.getContextPath() + "/quizSetup");
+      return;
+    }
+
+    // (3) アンボックス
+    int questionsPerRound = qprObj;
+    int questionIndex     = qiObj;
+    int correctCount      = ccObj;
+    int currentHP         = hpObj;
+
+    // (4) 回答を受け取り、正誤判定
+    String userAnswer = req.getParameter("answer");
+    Question currentQ = list.get(questionIndex - 1);
+    if (currentQ.getAnswer().equals(userAnswer)) {
+      correctCount++;
+      session.setAttribute("correctCount", correctCount);
+    }
+
+    // (5) 次の問題へ
+    questionIndex++;
+    session.setAttribute("questionIndex", questionIndex);
+    if (questionIndex <= questionsPerRound) {
+      // まだ問題が残っていれば quiz.jsp へ
+      RequestDispatcher rd = req.getRequestDispatcher("/WEB-INF/jsp/quiz.jsp");
+      rd.forward(req, resp);
+      return;
+    }
+
+    // (6) ラウンド最終回答　→　バリアへ登録
+    RoundService.submit(session.getId(), correctCount, questionsPerRound, currentHP);
+
+    // (7) 全員揃うまで waiting.jsp で待機
+    if (!RoundService.allSubmitted()) {
+      resp.sendRedirect(req.getContextPath() + "/waiting");
+      return;
+    }
+
+    // (8) 全員揃ったら結果画面へ
+    resp.sendRedirect(req.getContextPath() + "/result");
+  }
 }

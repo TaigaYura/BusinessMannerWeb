@@ -17,28 +17,17 @@ public class ResultServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-
     HttpSession session = req.getSession();
-
-    // 1) 直前ラウンドの結果を取得
-    int damage      = RoundService.getLastDamage();
-    int remainingHP = RoundService.getLastRemainingHP();
-
-    // 2) セッション更新
-    session.setAttribute("enemyHP", remainingHP);
-    Integer cr = (Integer) session.getAttribute("currentRound");
-    if (cr == null) cr = 1;
+    int dmg = RoundService.getLastDamage();
+    int hp  = RoundService.getLastRemainingHP();
+    session.setAttribute("enemyHP", hp);
+    int cr = (Integer) session.getAttribute("currentRound");
     session.setAttribute("currentRound", cr + 1);
     session.setAttribute("questionIndex", 1);
     session.setAttribute("correctCount", 0);
-
-    // 3) JSPに渡す
-    req.setAttribute("roundDamage", damage);
-    req.setAttribute("remainingHP", remainingHP);
-
-    // 4) result.jsp へフォワード
-    RequestDispatcher rd = req.getRequestDispatcher(
-        "/WEB-INF/jsp/result.jsp");
+    req.setAttribute("roundDamage", dmg);
+    req.setAttribute("remainingHP", hp);
+    RequestDispatcher rd = req.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
     rd.forward(req, resp);
   }
 }

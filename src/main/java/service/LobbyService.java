@@ -1,33 +1,39 @@
 package service;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.servlet.http.HttpSession;
 
-/**
- * ロビー管理サービス
- */
 public class LobbyService {
-    private static final Set<String> sessions = ConcurrentHashMap.newKeySet();
-    private static boolean gameStarted = false;
+    // セッションIDを保持
+    private static final Set<String> sessions =
+        Collections.synchronizedSet(new HashSet<>());
+    // ゲーム開始フラグ
+    private static volatile boolean gameStarted = false;
 
-    public static synchronized void join(HttpSession session) {
+    /** ロビーに参加 */
+    public static void join(HttpSession session) {
         sessions.add(session.getId());
     }
 
-    public static synchronized void startGame() {
-        gameStarted = true;
-    }
-
+    /** 現在の参加人数 */
     public static int getPlayerCount() {
         return sessions.size();
     }
 
+    /** ホストがゲーム開始ボタンを押したとき */
+    public static void startGame() {
+        gameStarted = true;
+    }
+
+    /** ゲーム開始済みか */
     public static boolean isGameStarted() {
         return gameStarted;
     }
 
+    /** 新ゲーム用にリセット */
     public static synchronized void reset() {
         sessions.clear();
         gameStarted = false;

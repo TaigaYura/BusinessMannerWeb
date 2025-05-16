@@ -1,32 +1,24 @@
 package service;
 
-/**
- * ゲーム進行に関わるロジックをまとめるサービスクラス
- */
 public class GameService {
-
-    /** 敵の残りHP */
-    private int enemyHP = 100;
+    /** 1ラウンドあたりの最大ダメージ */
+    public static final int MAX_DAMAGE = 100;
 
     /**
-     * 全員の平均正答率からダメージ量を計算
-     * @param avgRate  全員の正答率平均 (0.0～1.0)
-     * @param baseDamage  ラウンドあたりの最大ダメージ（例：questionsPerRound）
-     * @return 実際に与えるダメージ量（整数）
+     * 正答数からダメージを計算
+     * @param correctCount 正答数
+     * @param questionsPerRound 問題数
      */
-    public int calculateDamage(double avgRate, int baseDamage) {
-        return (int) Math.round(avgRate * baseDamage);
+    public int calculateDamage(int correctCount, int questionsPerRound) {
+        double rate = correctCount / (double) questionsPerRound;
+        return (int) Math.round(rate * MAX_DAMAGE);
     }
 
     /**
-     * 計算したダメージを敵HPに反映
+     * 平均正答率からダメージを計算
+     * @param avgRate 平均正答率 (0.0～1.0)
      */
-    public void applyDamage(int damage) {
-        enemyHP = Math.max(0, enemyHP - damage);
-    }
-
-    /** 敵の現在HPを取得 */
-    public int getEnemyHP() {
-        return enemyHP;
+    public int calculateDamageByRate(double avgRate) {
+        return (int) Math.round(avgRate * MAX_DAMAGE);
     }
 }
