@@ -1,48 +1,38 @@
 // webapp/js/lobby.js
 
 document.addEventListener('DOMContentLoaded', () => {
-  // HTML の <body data-context-path> 属性からコンテキストパスを取得
-  const ctx = document.body.dataset.contextPath;
+  const ctx       = document.body.dataset.contextPath;
   const statusUrl = `${ctx}/lobby/status`;
   const startUrl  = `${ctx}/lobby/startGame`;
-  
-  const countEl = document.getElementById('playerCount');
-  const totalEl = document.getElementById('playerTotal'); // 分母を動的更新している場合
-  const startBtn = document.getElementById('startBtn');
+
+  const countEl   = document.getElementById('playerCount');
+  const startBtn  = document.getElementById('startBtn');
+  const loader    = document.querySelector('.wrapper.loader');
 
   // 初期表示
-  countEl.textContent = '0';
-  if (totalEl) totalEl.textContent = '0';
+  countEl.textContent   = '0';
+  loader.style.display   = 'block';
 
-  // ゲーム開始ボタンのクリックでサーバにフラグを送信
+  // 「ゲームを開始する」ボタンで即遷移
   startBtn.addEventListener('click', () => {
-    fetch(startUrl, { method: 'POST' })
-      .then(() => {
-        // 送信後すぐに一度ステータスを更新
-        updateLobbyStatus();
-      })
-      .catch(console.error);
+    // ローダー非表示＆直接画面遷移
+    loader.style.display = 'none';
+    window.location.href = `${ctx}/quiz`;
   });
 
-  // サーバから参加人数と開始フラグを取得して UI を更新
+  // サーバからのポーリングは開始後も継続（必要に応じて）
   function updateLobbyStatus() {
     fetch(statusUrl)
-      .then(response => {
-        if (!response.ok) throw new Error(`Status ${response.status}`);
-        return response.json();
+      .then(res => {
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        return res.json();
       })
       .then(data => {
         countEl.textContent = data.count;
-        if (totalEl) totalEl.textContent = data.total;
-        if (data.started) {
-          // フラグが立ったらクイズ画面へ遷移
-          window.location.href = `${ctx}/quiz`;
-        }
       })
-      .catch(err => console.error('Lobby polling error:', err));
+      .catch(console.error);
   }
 
-  // ページロード時と以後3秒ごとにステータスを取得
   updateLobbyStatus();
   setInterval(updateLobbyStatus, 3000);
 });

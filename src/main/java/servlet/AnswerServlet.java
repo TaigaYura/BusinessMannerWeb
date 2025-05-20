@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import model.Question;
+import service.LobbyService;
 import service.RoundService;
 
 @WebServlet("/answer")
@@ -21,14 +22,12 @@ public class AnswerServlet extends HttpServlet {
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
 
-    // (1) セッションが存在しない or 切れていたら最初へ
     HttpSession session = req.getSession(false);
     if (session == null) {
       resp.sendRedirect(req.getContextPath() + "/quizSetup");
       return;
     }
 
-    // (2) 必須属性を一括で取得して null チェック
     Integer qprObj      = (Integer) session.getAttribute("questionsPerRound");
     Integer qiObj       = (Integer) session.getAttribute("questionIndex");
     Integer ccObj       = (Integer) session.getAttribute("correctCount");
@@ -37,18 +36,16 @@ public class AnswerServlet extends HttpServlet {
     List<Question> list = (List<Question>) session.getAttribute("currentQuestionList");
 
     if (qprObj == null || qiObj == null || ccObj == null || hpObj == null || list == null) {
-      // 何かが欠けていたら最初の画面へ
       resp.sendRedirect(req.getContextPath() + "/quizSetup");
       return;
     }
 
-    // (3) アンボックス
     int questionsPerRound = qprObj;
     int questionIndex     = qiObj;
     int correctCount      = ccObj;
     int currentHP         = hpObj;
 
-    // (4) 回答を受け取り、正誤判定
+    // 正誤判定
     String userAnswer = req.getParameter("answer");
     Question currentQ = list.get(questionIndex - 1);
     if (currentQ.getAnswer().equals(userAnswer)) {
@@ -56,26 +53,31 @@ public class AnswerServlet extends HttpServlet {
       session.setAttribute("correctCount", correctCount);
     }
 
-    // (5) 次の問題へ
+    // 次の問題へ
     questionIndex++;
     session.setAttribute("questionIndex", questionIndex);
     if (questionIndex <= questionsPerRound) {
-      // まだ問題が残っていれば quiz.jsp へ
       RequestDispatcher rd = req.getRequestDispatcher("/WEB-INF/jsp/quiz.jsp");
       rd.forward(req, resp);
       return;
     }
 
-    // (6) ラウンド最終回答　→　バリアへ登録
+    // 最終問題回答 → バリア登録
     RoundService.submit(session.getId(), correctCount, questionsPerRound, currentHP);
 
-    // (7) 全員揃うまで waiting.jsp で待機
+    // **１人プレイなら即リザルトへ**
+    if (LobbyService.getPlayerCount() <= 1) {
+      resp.sendRedirect(req.getContextPath() + "/result");
+      return;
+    }
+
+    // マルチプレイ時：全員揃うまで待機
     if (!RoundService.allSubmitted()) {
       resp.sendRedirect(req.getContextPath() + "/waiting");
       return;
     }
 
-    // (8) 全員揃ったら結果画面へ
+    // 全員揃ったらリザルトへ
     resp.sendRedirect(req.getContextPath() + "/result");
   }
 }
