@@ -2,9 +2,12 @@ package model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Question {
+
     @JsonProperty("question")
     private String text;
 
@@ -14,7 +17,6 @@ public class Question {
     @JsonProperty("answer")
     private String answer;
 
-    // Jackson 用
     public Question() {}
 
     public String getText() {
@@ -31,6 +33,7 @@ public class Question {
         this.options = options;
     }
 
+    /** JSON の "answer" をそのまま返す正解文字列 */
     public String getAnswer() {
         return answer;
     }

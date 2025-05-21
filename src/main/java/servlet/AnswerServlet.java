@@ -1,6 +1,7 @@
 package servlet;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 
 import jakarta.servlet.RequestDispatcher;
@@ -28,32 +29,56 @@ public class AnswerServlet extends HttpServlet {
       return;
     }
 
-    Integer qprObj      = (Integer) session.getAttribute("questionsPerRound");
-    Integer qiObj       = (Integer) session.getAttribute("questionIndex");
-    Integer ccObj       = (Integer) session.getAttribute("correctCount");
-    Integer hpObj       = (Integer) session.getAttribute("enemyHP");
     @SuppressWarnings("unchecked")
     List<Question> list = (List<Question>) session.getAttribute("currentQuestionList");
-
-    if (qprObj == null || qiObj == null || ccObj == null || hpObj == null || list == null) {
+    Integer qiObj       = (Integer) session.getAttribute("questionIndex");
+    Integer qprObj      = (Integer) session.getAttribute("questionsPerRound");
+    Integer ccObj       = (Integer) session.getAttribute("correctCount");
+    Integer hpObj       = (Integer) session.getAttribute("enemyHP");
+    if (list == null || qiObj == null || qprObj == null || ccObj == null || hpObj == null) {
       resp.sendRedirect(req.getContextPath() + "/quizSetup");
       return;
     }
 
-    int questionsPerRound = qprObj;
     int questionIndex     = qiObj;
+    int questionsPerRound = qprObj;
     int correctCount      = ccObj;
     int currentHP         = hpObj;
 
-    // 正誤判定
-    String userAnswer = req.getParameter("answer");
+    // 正解・ユーザー回答を取得
     Question currentQ = list.get(questionIndex - 1);
-    if (currentQ.getAnswer().equals(userAnswer)) {
+    String rawCorrect = currentQ.getAnswer();
+    String rawUser    = req.getParameter("answer");
+
+    // 空白をトリムして比較
+    String correctAnswer = (rawCorrect != null ? rawCorrect.trim() : "");
+    String userAnswer    = (rawUser    != null ? rawUser.trim()    : "");
+    boolean correct      = correctAnswer.equals(userAnswer);
+
+    // 正解ならカウントアップ
+    if (correct) {
       correctCount++;
       session.setAttribute("correctCount", correctCount);
     }
 
-    // 次の問題へ
+    // Ajax 判定（JSON レスポンス）
+    String xhr    = req.getHeader("X-Requested-With");
+    String accept = req.getHeader("Accept");
+    boolean isAjax = "XMLHttpRequest".equals(xhr)
+                   || (accept != null && accept.contains("application/json"));
+    if (isAjax) {
+      resp.setContentType("application/json;charset=UTF-8");
+      try (PrintWriter out = resp.getWriter()) {
+        out.write("{"
+          + "\"correct\":"         + correct
+          + ",\"answer\":\""       + userAnswer
+          + "\",\"correctAnswer\":\"" + correctAnswer
+          + "\"}");
+      }
+      return;
+    }
+
+    // 同期処理：次の問題 or 結果ページへ
     questionIndex++;
     session.setAttribute("questionIndex", questionIndex);
     if (questionIndex <= questionsPerRound) {
@@ -62,22 +87,16 @@ public class AnswerServlet extends HttpServlet {
       return;
     }
 
-    // 最終問題回答 → バリア登録
+    // ラウンド終了処理
     RoundService.submit(session.getId(), correctCount, questionsPerRound, currentHP);
-
-    // **１人プレイなら即リザルトへ**
     if (LobbyService.getPlayerCount() <= 1) {
       resp.sendRedirect(req.getContextPath() + "/result");
       return;
     }
-
-    // マルチプレイ時：全員揃うまで待機
     if (!RoundService.allSubmitted()) {
       resp.sendRedirect(req.getContextPath() + "/waiting");
       return;
     }
-
-    // 全員揃ったらリザルトへ
     resp.sendRedirect(req.getContextPath() + "/result");
   }
 }

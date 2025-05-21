@@ -132,6 +132,26 @@ button:active,
   text-align: left;
 }
 
+/* フィードバックメッセージ */
+.feedback.correct {
+  color: #4CAF50;
+}
+.feedback.incorrect {
+  color: #F44336;
+}
+
+/* 選択肢ラベルの正解ハイライト（緑枠） */
+.difficulty-option.correct {
+  border-color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+/* 選択肢ラベルの誤答ハイライト（赤枠） */
+.difficulty-option.incorrect {
+  border-color: #F44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
 /* ローディングアニメーション */
 .wrapper.loader {
   width: 200px;

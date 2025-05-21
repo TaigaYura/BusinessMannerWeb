@@ -55,7 +55,6 @@ public class RoundService {
         lastDamage      = 0;
         lastRemainingHP = 0;
     }
-
     //──────────────────────────
     // internal
     private static void calculateAll(int qpr, int currentHP) {
@@ -67,5 +66,9 @@ public class RoundService {
         // ダメージは正答率×MAX_DAMAGE
         lastDamage      = (int) Math.round(lastAvgRate * GameService.MAX_DAMAGE);
         lastRemainingHP = currentHP - lastDamage;
+    }
+    /** 平均正答率 (0.0〜1.0) を外部で取得できるように */
+    public static double getLastAvgRate() {
+        return lastAvgRate;
     }
 }
