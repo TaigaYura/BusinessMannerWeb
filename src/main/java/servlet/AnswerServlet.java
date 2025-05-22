@@ -31,10 +31,10 @@ public class AnswerServlet extends HttpServlet {
 
     @SuppressWarnings("unchecked")
     List<Question> list = (List<Question>) session.getAttribute("currentQuestionList");
-    Integer qiObj       = (Integer) session.getAttribute("questionIndex");
-    Integer qprObj      = (Integer) session.getAttribute("questionsPerRound");
-    Integer ccObj       = (Integer) session.getAttribute("correctCount");
-    Integer hpObj       = (Integer) session.getAttribute("enemyHP");
+    Integer qiObj  = (Integer) session.getAttribute("questionIndex");
+    Integer qprObj = (Integer) session.getAttribute("questionsPerRound");
+    Integer ccObj  = (Integer) session.getAttribute("correctCount");
+    Integer hpObj  = (Integer) session.getAttribute("enemyHP");
     if (list == null || qiObj == null || qprObj == null || ccObj == null || hpObj == null) {
       resp.sendRedirect(req.getContextPath() + "/quizSetup");
       return;
@@ -45,23 +45,13 @@ public class AnswerServlet extends HttpServlet {
     int correctCount      = ccObj;
     int currentHP         = hpObj;
 
-    // 正解・ユーザー回答を取得
-    Question currentQ = list.get(questionIndex - 1);
-    String rawCorrect = currentQ.getAnswer();
-    String rawUser    = req.getParameter("answer");
-
-    // 空白をトリムして比較
-    String correctAnswer = (rawCorrect != null ? rawCorrect.trim() : "");
-    String userAnswer    = (rawUser    != null ? rawUser.trim()    : "");
+    // ---- 正誤判定（だけ先に）
+    Question currentQ    = list.get(questionIndex - 1);
+    String correctAnswer = currentQ.getAnswer();
+    String userAnswer    = req.getParameter("answer");
     boolean correct      = correctAnswer.equals(userAnswer);
 
-    // 正解ならカウントアップ
-    if (correct) {
-      correctCount++;
-      session.setAttribute("correctCount", correctCount);
-    }
-
-    // Ajax 判定（JSON レスポンス）
+    // ---- Ajax 判定：JSON 応答だけ返して終了（セッションはまだいじらない）
     String xhr    = req.getHeader("X-Requested-With");
     String accept = req.getHeader("Accept");
     boolean isAjax = "XMLHttpRequest".equals(xhr)
@@ -70,15 +60,21 @@ public class AnswerServlet extends HttpServlet {
       resp.setContentType("application/json;charset=UTF-8");
       try (PrintWriter out = resp.getWriter()) {
         out.write("{"
-          + "\"correct\":"         + correct
-          + ",\"answer\":\""       + userAnswer
+          + "\"correct\":"        + correct
+          + ",\"answer\":\""      + userAnswer
           + "\",\"correctAnswer\":\"" + correctAnswer
           + "\"}");
       }
       return;
     }
 
-    // 同期処理：次の問題 or 結果ページへ
+    // ---- 非 Ajax（実際の画面遷移）時にだけ、正答カウントをセッションに反映
+    if (correct) {
+      correctCount++;
+      session.setAttribute("correctCount", correctCount);
+    }
+
+    // ---- 次へ進む or ラウンド終了
     questionIndex++;
     session.setAttribute("questionIndex", questionIndex);
     if (questionIndex <= questionsPerRound) {
@@ -87,7 +83,7 @@ public class AnswerServlet extends HttpServlet {
       return;
     }
 
-    // ラウンド終了処理
+    // ラウンド終了 ⇒ 集計
     RoundService.submit(session.getId(), correctCount, questionsPerRound, currentHP);
     if (LobbyService.getPlayerCount() <= 1) {
       resp.sendRedirect(req.getContextPath() + "/result");

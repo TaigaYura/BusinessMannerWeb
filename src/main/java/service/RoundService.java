@@ -7,9 +7,9 @@ public class RoundService {
     // セッションID → 正答数
     private static final Map<String,Integer> submissions = new ConcurrentHashMap<>();
     // 最新ラウンドの集計結果
-    private static double lastAvgRate      = 0.0;
-    private static int    lastDamage       = 0;
-    private static int    lastRemainingHP  = 0;
+    private static double lastAvgRate     = 0.0;
+    private static int    lastDamage      = 0;
+    private static int    lastRemainingHP = 0;
 
     /** 回答を登録し、全員揃ったら集計 */
     public static synchronized void submit(String sessionId,
@@ -55,11 +55,11 @@ public class RoundService {
         lastDamage      = 0;
         lastRemainingHP = 0;
     }
+
     //──────────────────────────
-    // internal
     private static void calculateAll(int qpr, int currentHP) {
-        lastAvgRate = submissions.values()
-            .stream()
+        // 全員の正答率を平均して取得
+        lastAvgRate = submissions.values().stream()
             .mapToDouble(c -> c / (double) qpr)
             .average()
             .orElse(0.0);
@@ -67,6 +67,7 @@ public class RoundService {
         lastDamage      = (int) Math.round(lastAvgRate * GameService.MAX_DAMAGE);
         lastRemainingHP = currentHP - lastDamage;
     }
+
     /** 平均正答率 (0.0〜1.0) を外部で取得できるように */
     public static double getLastAvgRate() {
         return lastAvgRate;

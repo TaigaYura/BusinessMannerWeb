@@ -15,9 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 「ゲームを開始する」ボタンで即遷移
   startBtn.addEventListener('click', () => {
-    // ローダー非表示＆直接画面遷移
-    loader.style.display = 'none';
-    window.location.href = `${ctx}/quiz`;
+	// ゲーム開始フラグをサーバに立てる
+	fetch(startUrl, { method: 'POST' })
+	.then(res => {
+	if (!res.ok) throw new Error('startGame failed');
+	// ホスト自身もクイズ画面へ
+	window.location.href = `${ctx}/quiz`;
+	})
+	.catch(err => {
+	console.error(err);
+	// 万が一失敗したら同期遷移
+	window.location.href = `${ctx}/quiz`;
+	});
   });
 
   // サーバからのポーリングは開始後も継続（必要に応じて）
@@ -29,6 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .then(data => {
         countEl.textContent = data.count;
+		// サーバ側でゲーム開始フラグが true なら全員クイズ画面へ
+		if (data.started) {
+		window.location.href = `${ctx}/quiz`;
+		}
       })
       .catch(console.error);
   }
