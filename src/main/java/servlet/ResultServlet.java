@@ -26,6 +26,17 @@ public class ResultServlet extends HttpServlet {
     req.setAttribute("roundDamage", damage);
     req.setAttribute("remainingHP", remaining);
 
+    // 敵画像の切り替え（HP に応じて）
+    String enemyImage;
+    if (remaining > 70) {
+      enemyImage = "enemy_full.png";
+    } else if (remaining > 30) {
+      enemyImage = "enemy_half.png";
+    } else {
+      enemyImage = "enemy_low.png";
+    }
+    req.setAttribute("enemyImage", enemyImage);
+
     // 平均正答率をパーセンテージ化して渡す
     double avgRate     = RoundService.getLastAvgRate();       // 0.0～1.0
     int    correctRate = (int) Math.round(avgRate * 100);     // 0～100%

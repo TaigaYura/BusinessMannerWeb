@@ -24,7 +24,7 @@
                value="easy"
                checked
                class="radio-input" />
-        <span class="option-label">Easy (3問 × 3ラウンド)</span>
+        <span class="option-label">簡単（5問 × 3ラウンド）</span>
       </label>
       
       <label class="difficulty-option">
@@ -32,7 +32,7 @@
                name="difficulty"
                value="normal"
                class="radio-input" />
-        <span class="option-label">Normal (5問 × 5ラウンド)</span>
+        <span class="option-label">ふつう（10問 × 5ラウンド）</span>
       </label>
       
       <label class="difficulty-option">
@@ -40,7 +40,7 @@
                name="difficulty"
                value="hard"
                class="radio-input" />
-        <span class="option-label">Hard (7問 × 7ラウンド)</span>
+        <span class="option-label">激しく難しい（20問 × 7ラウンド）</span>
       </label>
       
       <button type="submit"

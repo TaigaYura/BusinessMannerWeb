@@ -32,24 +32,40 @@ public class QuizSetupServlet extends HttpServlet {
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
     String difficulty = req.getParameter("difficulty");
-    int totalRounds, questionsPerRound;
+
+    int totalRounds, questionsPerRound, enemyHP;
+
     switch (difficulty) {
       case "easy":
-        totalRounds = 3; questionsPerRound = 3; break;
+        questionsPerRound = 5;
+        totalRounds = 3;
+        enemyHP = 150;
+        break;
       case "normal":
-        totalRounds = 5; questionsPerRound = 5; break;
+        questionsPerRound = 10;
+        totalRounds = 5;
+        enemyHP = 400;
+        break;
       case "hard":
-        totalRounds = 7; questionsPerRound = 7; break;
+        questionsPerRound = 20;
+        totalRounds = 7;
+        enemyHP = 665;
+        break;
       default:
-        totalRounds = 5; questionsPerRound = 5;
+        questionsPerRound = 10;
+        totalRounds = 5;
+        enemyHP = 400;
     }
+
     HttpSession session = req.getSession();
     session.setAttribute("difficulty", difficulty);
     session.setAttribute("totalRounds", totalRounds);
     session.setAttribute("questionsPerRound", questionsPerRound);
+    session.setAttribute("enemyHP", enemyHP);
     session.setAttribute("currentRound", 1);
     session.setAttribute("questionIndex", 1);
     session.setAttribute("correctCount", 0);
+
     resp.sendRedirect(req.getContextPath() + "/lobby");
   }
 }

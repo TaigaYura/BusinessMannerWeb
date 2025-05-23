@@ -16,19 +16,19 @@
     <p class="subtitle text-center">あなたの成果をチェックしよう！</p>
   </header>
 
-  <main class="main-content centered-content">
-    <div class="stats-box">
-      <!-- 必ず correctRate を参照 -->
-      <p class="mt-1">
-        <strong><c:out value="${correctRate}"/>%</strong> の正答率
-      </p>
-      <!-- ダメージは roundDamage -->
-      <p class="mt-1">
-        与えたダメージ：<strong><c:out value="${roundDamage}"/></strong>
-      </p>
-      <p class="mt-1">
-        敵の残りHP：<strong><c:out value="${remainingHP}"/></strong>
-      </p>
+  <main class="main-content text-center">
+    <div class="enemy-container">
+      <img src="${pageContext.request.contextPath}/images/${enemyImage}" alt="敵画像" class="enemy-image" />
+    </div>
+
+    <div class="hp-bar mt-2">
+      <div class="hp-fill" style="width: ${remainingHP}%;"></div>
+    </div>
+
+    <div class="stats-box mt-2">
+      <p><strong><c:out value="${correctRate}"/>%</strong> の正答率</p>
+      <p>与えたダメージ：<strong><c:out value="${roundDamage}"/></strong></p>
+      <p>敵の残りHP：<strong><c:out value="${remainingHP}"/></strong></p>
     </div>
 
     <div class="button-group mt-2">

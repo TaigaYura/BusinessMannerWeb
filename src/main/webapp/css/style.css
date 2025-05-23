@@ -96,8 +96,6 @@ button:active,
   font-size: 1.125rem;
   color: var(--color-text);
   cursor: pointer;
-
-  /* 初期状態のグレー枠 */
   border: 2px solid #ccc;
   border-radius: var(--radius);
   padding: 0.5rem 1rem;
@@ -105,18 +103,13 @@ button:active,
 }
 .difficulty-option:hover,
 .difficulty-option:focus-within {
-  /* カーソルを合わせたとき＆フォーカス時にオレンジ枠 */
   border-color: var(--color-primary);
   background-color: rgba(255, 140, 0, 0.1);
 }
-
-/* 選択されたラベル全体をオレンジ枠に */
 .difficulty-option:has(.radio-input:checked) {
   border-color: var(--color-primary);
   background-color: rgba(255, 140, 0, 0.1);
 }
-
-/* ラジオ本体は非表示。枠ハイライトで選択を示す */
 .radio-input {
   appearance: none;
   -webkit-appearance: none;
@@ -125,28 +118,22 @@ button:active,
   margin: 0;
   padding: 0;
 }
-
-/* テキスト部分はラベルに内包しているので、ここには変更不要 */
 .option-label {
   flex: 1;
   text-align: left;
 }
 
-/* フィードバックメッセージ */
+/* フィードバック */
 .feedback.correct {
   color: #4CAF50;
 }
 .feedback.incorrect {
   color: #F44336;
 }
-
-/* 選択肢ラベルの正解ハイライト（緑枠） */
 .difficulty-option.correct {
   border-color: #4CAF50;
   background-color: rgba(76, 175, 80, 0.1);
 }
-
-/* 選択肢ラベルの誤答ハイライト（赤枠） */
 .difficulty-option.incorrect {
   border-color: #F44336;
   background-color: rgba(244, 67, 54, 0.1);
@@ -238,6 +225,67 @@ button:active,
   left: 50%;
   transform: translateX(-50%);
   text-transform: uppercase;
+}
+
+/* HPバー */
+.hp-bar {
+  width: 300px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 10px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+}
+.hp-fill {
+  height: 100%;
+  background: linear-gradient(to right, #4CAF50, #F44336);
+  border-radius: 10px 0 0 10px;
+  transition: width 1s ease-in-out;
+}
+
+/* 敵画像 */
+.enemy-container {
+  margin: 1.5rem auto;
+}
+img.enemy-image {
+  max-width: 150px !important;
+  height: auto !important;
+  display: block;
+  margin: 1rem auto;
+}
+
+/* 勝利画面 */
+.victory {
+  background-color: #fffaf0;
+  color: #2e8b57;
+}
+.btn--victory {
+  background-color: #2e8b57;
+}
+.btn--victory:hover {
+  background-color: #3cb371;
+}
+
+/* 敗北画面 */
+.defeat {
+  background-color: #fef0f0;
+  color: #b22222;
+}
+.btn--defeat {
+  background-color: #b22222;
+}
+.btn--defeat:hover {
+  background-color: #dc143c;
+}
+
+/* 結果画像共通 */
+img.result-image {
+  max-width: 200px !important;
+  height: auto !important;
+  display: block;
+  margin: 1rem auto;
 }
 
 /* レスポンシブ */

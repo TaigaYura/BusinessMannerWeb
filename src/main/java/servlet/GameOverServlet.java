@@ -18,16 +18,15 @@ public class GameOverServlet extends HttpServlet {
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
     HttpSession session = req.getSession();
-    int hp   = (Integer) session.getAttribute("enemyHP");
-    int tot  = (Integer) session.getAttribute("totalRounds");
-    int cur  = (Integer) session.getAttribute("currentRound");
-    boolean win      = hp <= 0;
-    boolean roundsUp = cur > tot && hp > 0;
-    req.setAttribute("win", win);
-    req.setAttribute("roundsUp", roundsUp);
-    req.setAttribute("finalHP", hp);
+    int hp = (Integer) session.getAttribute("enemyHP");
+
+    // セッションのクリーンアップ
     LobbyService.reset();
-    RequestDispatcher rd = req.getRequestDispatcher("/WEB-INF/jsp/gameover.jsp");
+
+    // HP に応じて victory.jsp または defeat.jsp に振り分け
+    String view = (hp <= 0) ? "/WEB-INF/jsp/victory.jsp" : "/WEB-INF/jsp/defeat.jsp";
+
+    RequestDispatcher rd = req.getRequestDispatcher(view);
     rd.forward(req, resp);
   }
 }
